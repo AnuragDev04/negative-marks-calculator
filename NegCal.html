@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Negative Marks Calculator</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #f5f5f5;
+            --text-color: #333;
+            --error-color: #f44336;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .calculator {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: var(--text-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .input-group {
+            margin: 20px 0;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        .calculate-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .reset-btn {
+            background: #666;
+            color: white;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #result {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 6px;
+            background: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.8;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #result.show {
+            opacity: 1;
+        }
+
+        .error {
+            color: var(--error-color);
+            font-weight: 500;
+        }
+
+        @media (max-width: 480px) {
+            .calculator {
+                padding: 20px;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h2>Negative Marks Calculator</h2>
+        
+        <form id="calcForm" onsubmit="calculateScore(event)">
+            <div class="input-group">
+                <label for="totalQuestions">Total Questions:</label>
+                <input type="number" id="totalQuestions" min="0" required>
+            </div>
+
+            <div class="input-group">
+                <label for="correctAnswers">Correct Answers:</label>
+                <input type="number" id="correctAnswers" min="0" required>
+            </div>
+
+            <div class="input-group">
+                <label for="positiveMarks">Marks per Correct Answer:</label>
+                <input type="number" id="positiveMarks" value="4" min="0" step="0.25" required>
+            </div>
+
+            <div class="input-group">
+                <label for="negativeMarks">Negative Marks per Wrong Answer:</label>
+                <input type="number" id="negativeMarks" value="1" min="0" step="0.25" required>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="calculate-btn">Calculate Score</button>
+                <button type="button" class="reset-btn" onclick="resetForm()">Reset</button>
+            </div>
+        </form>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('calcForm');
+        const resultDiv = document.getElementById('result');
+
+        function calculateScore(event) {
+            event.preventDefault();
+
+            try {
+                // Get and validate input values
+                const totalQuestions = parseInt(document.getElementById('totalQuestions').value);
+                const correctAnswers = parseInt(document.getElementById('correctAnswers').value);
+                const positiveMarks = parseFloat(document.getElementById('positiveMarks').value);
+                const negativeMarks = parseFloat(document.getElementById('negativeMarks').value);
+
+                if (isNaN(totalQuestions) || isNaN(correctAnswers) || 
+                    isNaN(positiveMarks) || isNaN(negativeMarks)) {
+                    throw new Error('Please fill all fields with valid numbers');
+                }
+
+                if (totalQuestions < 0 || correctAnswers < 0 || 
+                    positiveMarks < 0 || negativeMarks < 0) {
+                    throw new Error('Values cannot be negative');
+                }
+
+                if (correctAnswers > totalQuestions) {
+                    throw new Error('Correct answers cannot exceed total questions');
+                }
+
+                // Calculations
+                const wrongAnswers = totalQuestions - correctAnswers;
+                const positiveScore = correctAnswers * positiveMarks;
+                const negativeScore = wrongAnswers * negativeMarks;
+                const totalScore = positiveScore - negativeScore;
+                const percentage = (totalScore / (totalQuestions * positiveMarks)) * 100;
+
+                // Display results
+                resultDiv.innerHTML = `
+                    Positive Score: ${positiveScore.toFixed(2)}<br>
+                    Negative Score: -${negativeScore.toFixed(2)}<br>
+                    Wrong Answers: ${wrongAnswers}<br>
+                    Total Score: ${totalScore.toFixed(2)}<br>
+                    Percentage: ${percentage.toFixed(2)}%
+                `;
+                resultDiv.classList.add('show');
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">Error: ${error.message}</span>`;
+                resultDiv.classList.add('show');
+            }
+        }
+
+        function resetForm() {
+            form.reset();
+            document.getElementById('positiveMarks').value = '4';
+            document.getElementById('negativeMarks').value = '1';
+            resultDiv.classList.remove('show');
+            resultDiv.innerHTML = '';
+        }
+
+        // Real-time input validation
+        form.addEventListener('input', () => {
+            resultDiv.classList.remove('show');
+        });
+    </script>
+</body>
+</html>
